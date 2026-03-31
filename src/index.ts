@@ -3,9 +3,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { MobbinApiClient } from "./services/api-client.js";
-import { formatApps, formatScreens, formatFlows, formatCollections } from "./utils/formatting.js";
-import { DEFAULT_PAGE_SIZE } from "./constants.js";
+import { MobbinApiClient } from "./services/api-client";
+import { formatApps, formatScreens, formatFlows, formatCollections } from "./utils/formatting";
+import { DEFAULT_PAGE_SIZE } from "./constants";
 
 const cookieValue = process.env.MOBBIN_AUTH_COOKIE;
 if (!cookieValue) {

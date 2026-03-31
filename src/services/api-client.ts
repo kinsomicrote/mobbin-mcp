@@ -1,4 +1,4 @@
-import { MOBBIN_BASE_URL } from "../constants.js";
+import { MOBBIN_BASE_URL } from "../constants";
 import type {
   AppResult,
   ScreenResult,
@@ -7,15 +7,26 @@ import type {
   SearchableApp,
   ContentSearchResponse,
   ValueResponse,
-} from "../types.js";
+} from "../types";
 
+/**
+ * HTTP client for Mobbin's internal Next.js API routes.
+ *
+ * Mobbin has no public API — these endpoints were reverse-engineered via Playwright.
+ * Auth is handled by passing the user's Supabase session cookie with every request.
+ * Cookies expire after ~1 hour; re-login to mobbin.com to refresh.
+ *
+ * All endpoints live at `https://mobbin.com/api/...` and proxy to Supabase server-side.
+ */
 export class MobbinApiClient {
   private cookieValue: string;
 
+  /** @param cookieValue Raw cookie string including `sb-ujasntkfphywizsdaapi-auth-token.0` and `.1` */
   constructor(cookieValue: string) {
     this.cookieValue = cookieValue;
   }
 
+  /** Make an authenticated request to a Mobbin API route. */
   private async request<T>(
     path: string,
     options: { method?: string; body?: unknown } = {}
@@ -46,8 +57,10 @@ export class MobbinApiClient {
     return res.json() as Promise<T>;
   }
 
-  // --- App Search ---
-
+  /**
+   * Search and browse apps with category filtering and pagination.
+   * Endpoint: `POST /api/content/search-apps`
+   */
   async searchApps(params: {
     platform: string;
     appCategories?: string[];
@@ -72,8 +85,10 @@ export class MobbinApiClient {
     });
   }
 
-  // --- Screen Search ---
-
+  /**
+   * Search screens across all apps by patterns, elements, or OCR keywords.
+   * Endpoint: `POST /api/content/search-screens`
+   */
   async searchScreens(params: {
     platform: string;
     screenPatterns?: string[];
@@ -106,8 +121,10 @@ export class MobbinApiClient {
     });
   }
 
-  // --- Flow Search ---
-
+  /**
+   * Search user flows/journeys by action type (e.g., "Creating Account").
+   * Endpoint: `POST /api/content/search-flows`
+   */
   async searchFlows(params: {
     platform: string;
     flowActions?: string[];
@@ -134,8 +151,11 @@ export class MobbinApiClient {
     });
   }
 
-  // --- Autocomplete Search ---
-
+  /**
+   * Fast autocomplete search — returns matching IDs grouped by relevance.
+   * Results contain only IDs; cross-reference with {@link getSearchableApps} for full details.
+   * Endpoint: `POST /api/search-bar/search`
+   */
   async autocompleteSearch(params: {
     query: string;
     experience?: string;
@@ -159,16 +179,21 @@ export class MobbinApiClient {
     });
   }
 
-  // --- Searchable Apps (full list for a platform) ---
-
+  /**
+   * Fetch the full list of apps for a platform (used for autocomplete cross-referencing).
+   * This is a large response (~1000+ apps); results are cached by the Mobbin client.
+   * Endpoint: `GET /api/searchable-apps/{platform}`
+   */
   async getSearchableApps(
     platform: string
   ): Promise<SearchableApp[]> {
     return this.request(`/api/searchable-apps/${platform}`);
   }
 
-  // --- Popular Apps ---
-
+  /**
+   * Get popular apps grouped by category with preview screenshots.
+   * Endpoint: `POST /api/popular-apps/fetch-popular-apps-with-preview-screens`
+   */
   async getPopularApps(params: {
     platform: string;
     limitPerCategory?: number;
@@ -190,16 +215,21 @@ export class MobbinApiClient {
     });
   }
 
-  // --- Collections ---
-
+  /**
+   * Fetch the authenticated user's saved collections with item counts.
+   * Endpoint: `POST /api/collection/fetch-collections`
+   */
   async getCollections(): Promise<ValueResponse<Collection[]>> {
     return this.request("/api/collection/fetch-collections", {
       method: "POST",
     });
   }
 
-  // --- Filter Taxonomy ---
-
+  /**
+   * Fetch the full filter taxonomy — all app categories, screen patterns,
+   * UI elements, and flow actions with definitions and content counts.
+   * Endpoint: `POST /api/filter-tags/fetch-dictionary-definitions`
+   */
   async getDictionaryDefinitions(): Promise<ValueResponse<unknown>> {
     return this.request("/api/filter-tags/fetch-dictionary-definitions", {
       method: "POST",
