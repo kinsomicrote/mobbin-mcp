@@ -13,6 +13,7 @@ import {
   formatScreenDetail,
 } from "./utils/formatting.js";
 import { DEFAULT_PAGE_SIZE } from "./constants.js";
+import type { DictionaryCategory } from "./types.js";
 import { readStoredSession, writeStoredSession } from "./utils/auth-store.js";
 
 async function main() {
@@ -62,31 +63,17 @@ async function main() {
     "mobbin_search_apps",
     "Search and browse apps on Mobbin by category and platform. Returns app names, logos, preview screens, and version IDs for deeper exploration.",
     {
-      platform: z
-        .enum(["ios", "android", "web"])
-        .default("ios")
-        .describe("Platform to search"),
+      platform: z.enum(["ios", "android", "web"]).default("ios").describe("Platform to search"),
       categories: z
         .array(z.string())
         .optional()
-        .describe(
-          "Filter by app categories (e.g., 'Finance', 'AI', 'Music & Audio')",
-        ),
+        .describe("Filter by app categories (e.g., 'Finance', 'AI', 'Music & Audio')"),
       sort_by: z
         .enum(["publishedAt", "trending", "popular", "top"])
         .default("publishedAt")
         .describe("Sort order"),
-      page_size: z
-        .number()
-        .min(1)
-        .max(50)
-        .default(DEFAULT_PAGE_SIZE)
-        .describe("Results per page"),
-      page_index: z
-        .number()
-        .min(0)
-        .default(0)
-        .describe("Page number (0-indexed)"),
+      page_size: z.number().min(1).max(50).default(DEFAULT_PAGE_SIZE).describe("Results per page"),
+      page_index: z.number().min(0).default(0).describe("Page number (0-indexed)"),
     },
     async ({ platform, categories, sort_by, page_size, page_index }) => {
       const result = await client.searchApps({
@@ -107,10 +94,7 @@ async function main() {
     "mobbin_search_screens",
     "Search screens across all apps on Mobbin. Filter by screen patterns (e.g., 'Login', 'Settings'), UI elements (e.g., 'Card', 'Table'), or text content. Returns screenshot URLs and metadata.",
     {
-      platform: z
-        .enum(["ios", "android", "web"])
-        .default("ios")
-        .describe("Platform to search"),
+      platform: z.enum(["ios", "android", "web"]).default("ios").describe("Platform to search"),
       screen_patterns: z
         .array(z.string())
         .optional()
@@ -127,29 +111,11 @@ async function main() {
         .array(z.string())
         .optional()
         .describe("Text keywords found in screenshots"),
-      categories: z
-        .array(z.string())
-        .optional()
-        .describe("Filter by app categories"),
-      has_animation: z
-        .boolean()
-        .optional()
-        .describe("Filter for animated screens only"),
-      sort_by: z
-        .enum(["trending", "publishedAt"])
-        .default("trending")
-        .describe("Sort order"),
-      page_size: z
-        .number()
-        .min(1)
-        .max(50)
-        .default(DEFAULT_PAGE_SIZE)
-        .describe("Results per page"),
-      page_index: z
-        .number()
-        .min(0)
-        .default(0)
-        .describe("Page number (0-indexed)"),
+      categories: z.array(z.string()).optional().describe("Filter by app categories"),
+      has_animation: z.boolean().optional().describe("Filter for animated screens only"),
+      sort_by: z.enum(["trending", "publishedAt"]).default("trending").describe("Sort order"),
+      page_size: z.number().min(1).max(50).default(DEFAULT_PAGE_SIZE).describe("Results per page"),
+      page_index: z.number().min(0).default(0).describe("Page number (0-indexed)"),
     },
     async ({
       platform,
@@ -184,44 +150,19 @@ async function main() {
     "mobbin_search_flows",
     "Search user flows/journeys across all apps on Mobbin. Filter by flow actions (e.g., 'Creating Account', 'Editing Profile'). Returns flow screens with hotspot data for prototyping.",
     {
-      platform: z
-        .enum(["ios", "android", "web"])
-        .default("ios")
-        .describe("Platform to search"),
+      platform: z.enum(["ios", "android", "web"]).default("ios").describe("Platform to search"),
       flow_actions: z
         .array(z.string())
         .optional()
         .describe(
           "Flow actions to filter by (e.g., 'Creating Account', 'Filtering & Sorting', 'Editing Profile')",
         ),
-      categories: z
-        .array(z.string())
-        .optional()
-        .describe("Filter by app categories"),
-      sort_by: z
-        .enum(["trending", "publishedAt"])
-        .default("trending")
-        .describe("Sort order"),
-      page_size: z
-        .number()
-        .min(1)
-        .max(50)
-        .default(DEFAULT_PAGE_SIZE)
-        .describe("Results per page"),
-      page_index: z
-        .number()
-        .min(0)
-        .default(0)
-        .describe("Page number (0-indexed)"),
+      categories: z.array(z.string()).optional().describe("Filter by app categories"),
+      sort_by: z.enum(["trending", "publishedAt"]).default("trending").describe("Sort order"),
+      page_size: z.number().min(1).max(50).default(DEFAULT_PAGE_SIZE).describe("Results per page"),
+      page_index: z.number().min(0).default(0).describe("Page number (0-indexed)"),
     },
-    async ({
-      platform,
-      flow_actions,
-      categories,
-      sort_by,
-      page_size,
-      page_index,
-    }) => {
+    async ({ platform, flow_actions, categories, sort_by, page_size, page_index }) => {
       const result = await client.searchFlows({
         platform,
         flowActions: flow_actions,
@@ -242,10 +183,7 @@ async function main() {
     "Quick autocomplete search for apps by name. Returns matching app IDs and names. Use this for fast lookup before fetching full details.",
     {
       query: z.string().describe("Search query (app name or keyword)"),
-      platform: z
-        .enum(["ios", "android", "web"])
-        .default("ios")
-        .describe("Platform to search"),
+      platform: z.enum(["ios", "android", "web"]).default("ios").describe("Platform to search"),
     },
     async ({ query, platform }) => {
       const [searchResult, allApps] = await Promise.all([
@@ -254,10 +192,7 @@ async function main() {
       ]);
 
       const appMap = new Map(allApps.map((a) => [a.id, a]));
-      const matchedApps = [
-        ...searchResult.value.primary,
-        ...searchResult.value.other,
-      ]
+      const matchedApps = [...searchResult.value.primary, ...searchResult.value.other]
         .filter((item) => item.type === "app")
         .map((item) => appMap.get(item.id))
         .filter(Boolean);
@@ -285,16 +220,8 @@ async function main() {
     "mobbin_popular_apps",
     "Get the most popular apps on Mobbin, grouped by category. Great for discovering trending design inspiration.",
     {
-      platform: z
-        .enum(["ios", "android", "web"])
-        .default("ios")
-        .describe("Platform"),
-      limit_per_category: z
-        .number()
-        .min(1)
-        .max(20)
-        .default(10)
-        .describe("Max apps per category"),
+      platform: z.enum(["ios", "android", "web"]).default("ios").describe("Platform"),
+      limit_per_category: z.number().min(1).max(20).default(10).describe("Max apps per category"),
     },
     async ({ platform, limit_per_category }) => {
       const result = await client.getPopularApps({
@@ -351,30 +278,17 @@ async function main() {
     {},
     async () => {
       const result = await client.getDictionaryDefinitions();
-      const categories = result.value as Array<{
-        slug: string;
-        displayName: string;
-        experience: string;
-        subCategories: Array<{
-          entries: Array<{
-            displayName: string;
-            definition: string;
-            contentCounts: Record<string, Record<string, number>>;
-          }>;
-        }>;
-      }>;
+      const categories = result.value as DictionaryCategory[];
 
       const text = categories
         .map((cat) => {
           const entries = cat.subCategories
             .flatMap((sub) => sub.entries)
-            .filter((e) => !("hidden" in e && e.hidden))
+            .filter((e) => !e.hidden)
             .map((e) => {
               const counts = Object.entries(e.contentCounts)
                 .flatMap(([type, platforms]) =>
-                  Object.entries(platforms).map(
-                    ([p, c]) => `${p} ${type}: ${c}`,
-                  ),
+                  Object.entries(platforms).map(([p, c]) => `${p} ${type}: ${c}`),
                 )
                 .join(", ");
               return `  - **${e.displayName}**: ${e.definition.substring(0, 80)}${e.definition.length > 80 ? "..." : ""} (${counts})`;
@@ -396,22 +310,11 @@ async function main() {
       screen_url: z
         .string()
         .url()
-        .describe(
-          "The screen image URL from a previous search result (screenUrl field)",
-        ),
-      screen_id: z
-        .string()
-        .optional()
-        .describe("Screen ID from search results"),
+        .describe("The screen image URL from a previous search result (screenUrl field)"),
+      screen_id: z.string().optional().describe("Screen ID from search results"),
       app_name: z.string().optional().describe("App name from search results"),
-      screen_patterns: z
-        .array(z.string())
-        .optional()
-        .describe("UI patterns from search results"),
-      screen_elements: z
-        .array(z.string())
-        .optional()
-        .describe("UI elements from search results"),
+      screen_patterns: z.array(z.string()).optional().describe("UI patterns from search results"),
+      screen_elements: z.array(z.string()).optional().describe("UI elements from search results"),
       dimensions: z
         .object({ width: z.number(), height: z.number() })
         .optional()
@@ -432,8 +335,7 @@ async function main() {
       extract_colors,
     }) => {
       try {
-        const { base64, mimeType, sizeBytes, buffer } =
-          await client.fetchScreenImage(screen_url);
+        const { base64, mimeType, sizeBytes, buffer } = await client.fetchScreenImage(screen_url);
 
         let dominantColors: string[] | undefined;
         if (extract_colors) {

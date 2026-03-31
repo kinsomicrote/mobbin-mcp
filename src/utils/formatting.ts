@@ -1,10 +1,5 @@
 import { CHARACTER_LIMIT } from "../constants.js";
-import type {
-  AppResult,
-  ScreenResult,
-  FlowResult,
-  Collection,
-} from "../types.js";
+import type { AppResult, ScreenResult, FlowResult, Collection } from "../types.js";
 
 export function formatApps(apps: AppResult[]): string {
   if (apps.length === 0) return "No apps found.";
@@ -45,9 +40,7 @@ export function formatScreens(screens: ScreenResult[]): string {
       `- **Screen URL**: ${s.screenUrl}`,
       `- **App ID**: ${s.appId}`,
       `- **Screen ID**: ${s.id}`,
-      s.metadata
-        ? `- **Dimensions**: ${s.metadata.width}x${s.metadata.height}`
-        : "",
+      s.metadata ? `- **Dimensions**: ${s.metadata.width}x${s.metadata.height}` : "",
     ]
       .filter(Boolean)
       .join("\n"),
@@ -62,10 +55,7 @@ export function formatFlows(flows: FlowResult[]): string {
   const lines = flows.map((f, i) => {
     const screenList = f.screens
       .slice(0, 5)
-      .map(
-        (s, j) =>
-          `  ${j + 1}. ${s.screenPatterns.join(", ") || "Step"} — ${s.screenUrl}`,
-      )
+      .map((s, j) => `  ${j + 1}. ${s.screenPatterns.join(", ") || "Step"} — ${s.screenUrl}`)
       .join("\n");
     const appInfo = f.appName ? `- **App**: ${f.appName}` : "";
     return [
@@ -75,9 +65,7 @@ export function formatFlows(flows: FlowResult[]): string {
       `- **Flow ID**: ${f.id}`,
       `- **Screens** (${f.screens.length} total):`,
       screenList,
-      f.screens.length > 5
-        ? `  ... and ${f.screens.length - 5} more screens`
-        : "",
+      f.screens.length > 5 ? `  ... and ${f.screens.length - 5} more screens` : "",
       f.videoUrl ? `- **Video**: ${f.videoUrl}` : "",
     ]
       .filter(Boolean)
@@ -135,17 +123,13 @@ export function formatScreenDetail(params: {
     lines.push(`- **Elements**: ${params.screenElements.join(", ")}`);
   }
   if (params.dimensions) {
-    lines.push(
-      `- **Dimensions**: ${params.dimensions.width}x${params.dimensions.height}`,
-    );
+    lines.push(`- **Dimensions**: ${params.dimensions.width}x${params.dimensions.height}`);
   }
   if (params.dominantColors && params.dominantColors.length > 0) {
     lines.push(`- **Dominant Colors**: ${params.dominantColors.join(", ")}`);
   }
   lines.push(`- **Image format**: ${params.mimeType}`);
-  lines.push(
-    `- **Image size**: ${(params.imageSizeBytes / 1024).toFixed(1)} KB`,
-  );
+  lines.push(`- **Image size**: ${(params.imageSizeBytes / 1024).toFixed(1)} KB`);
   lines.push(`- **Source URL**: ${params.screenUrl}`);
 
   return lines.join("\n");

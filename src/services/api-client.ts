@@ -6,6 +6,11 @@ import {
   IMAGE_FETCH_TIMEOUT_MS,
   BYTESCALE_CDN_BASE,
   SUPABASE_STORAGE_PREFIX,
+  DEFAULT_PAGE_SIZE,
+  DEFAULT_PAGE_INDEX,
+  COLOR_SAMPLE_SIZE,
+  COLOR_QUANTIZE_STEP,
+  COLOR_QUANTIZE_MAX,
 } from "../constants.js";
 import type {
   AppResult,
@@ -86,8 +91,8 @@ export class MobbinApiClient {
           appCategories: params.appCategories ?? null,
         },
         paginationOptions: {
-          pageSize: params.pageSize ?? 24,
-          pageIndex: params.pageIndex ?? 0,
+          pageSize: params.pageSize ?? DEFAULT_PAGE_SIZE,
+          pageIndex: params.pageIndex ?? DEFAULT_PAGE_INDEX,
           sortBy: params.sortBy ?? "publishedAt",
         },
       },
@@ -122,8 +127,8 @@ export class MobbinApiClient {
           hasAnimation: params.hasAnimation ?? null,
         },
         paginationOptions: {
-          pageSize: params.pageSize ?? 24,
-          pageIndex: params.pageIndex ?? 0,
+          pageSize: params.pageSize ?? DEFAULT_PAGE_SIZE,
+          pageIndex: params.pageIndex ?? DEFAULT_PAGE_INDEX,
           sortBy: params.sortBy ?? "trending",
         },
       },
@@ -152,8 +157,8 @@ export class MobbinApiClient {
           appCategories: params.appCategories ?? null,
         },
         paginationOptions: {
-          pageSize: params.pageSize ?? 24,
-          pageIndex: params.pageIndex ?? 0,
+          pageSize: params.pageSize ?? DEFAULT_PAGE_SIZE,
+          pageIndex: params.pageIndex ?? DEFAULT_PAGE_INDEX,
           sortBy: params.sortBy ?? "trending",
         },
       },
@@ -201,10 +206,7 @@ export class MobbinApiClient {
    * Get popular apps grouped by category with preview screenshots.
    * Endpoint: `POST /api/popular-apps/fetch-popular-apps-with-preview-screens`
    */
-  async getPopularApps(params: {
-    platform: string;
-    limitPerCategory?: number;
-  }): Promise<
+  async getPopularApps(params: { platform: string; limitPerCategory?: number }): Promise<
     ValueResponse<
       Array<{
         app_id: string;
@@ -217,16 +219,13 @@ export class MobbinApiClient {
       }>
     >
   > {
-    return this.request(
-      "/api/popular-apps/fetch-popular-apps-with-preview-screens",
-      {
-        method: "POST",
-        body: {
-          platform: params.platform,
-          limitPerCategory: params.limitPerCategory ?? 10,
-        },
+    return this.request("/api/popular-apps/fetch-popular-apps-with-preview-screens", {
+      method: "POST",
+      body: {
+        platform: params.platform,
+        limitPerCategory: params.limitPerCategory ?? 10,
       },
-    );
+    });
   }
 
   /**
@@ -272,9 +271,7 @@ export class MobbinApiClient {
       throw new Error(`Unrecognized Supabase URL format: ${imageUrl}`);
     }
 
-    const storagePath = parsed.pathname.slice(
-      storageIdx + SUPABASE_STORAGE_PREFIX.length,
-    );
+    const storagePath = parsed.pathname.slice(storageIdx + SUPABASE_STORAGE_PREFIX.length);
     return `${BYTESCALE_CDN_BASE}/${storagePath}?f=webp&w=1920&q=85&fit=shrink-cover`;
   }
 
@@ -298,18 +295,13 @@ export class MobbinApiClient {
 
     const fetchUrl = this.toCdnUrl(imageUrl);
     const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      IMAGE_FETCH_TIMEOUT_MS,
-    );
+    const timeoutId = setTimeout(() => controller.abort(), IMAGE_FETCH_TIMEOUT_MS);
 
     try {
       const res = await fetch(fetchUrl, { signal: controller.signal });
 
       if (!res.ok) {
-        throw new Error(
-          `Failed to fetch image: ${res.status} ${res.statusText} — ${fetchUrl}`,
-        );
+        throw new Error(`Failed to fetch image: ${res.status} ${res.statusText} — ${fetchUrl}`);
       }
 
       const contentLength = res.headers.get("content-length");
@@ -326,13 +318,11 @@ export class MobbinApiClient {
         );
       }
 
-      let mimeType =
-        res.headers.get("content-type")?.split(";")[0]?.trim() || "";
+      let mimeType = res.headers.get("content-type")?.split(";")[0]?.trim() || "";
       if (!mimeType || mimeType === "application/octet-stream") {
         if (fetchUrl.includes("f=webp")) mimeType = "image/webp";
         else if (fetchUrl.endsWith(".png")) mimeType = "image/png";
-        else if (fetchUrl.endsWith(".jpg") || fetchUrl.endsWith(".jpeg"))
-          mimeType = "image/jpeg";
+        else if (fetchUrl.endsWith(".jpg") || fetchUrl.endsWith(".jpeg")) mimeType = "image/jpeg";
         else mimeType = "image/png";
       }
 
@@ -352,23 +342,29 @@ export class MobbinApiClient {
    * Extract dominant colors from a screen image buffer.
    * Returns an array of hex color strings sorted by frequency.
    */
-  async extractColors(
-    imageBuffer: Buffer,
-    maxColors: number = 8,
-  ): Promise<string[]> {
+  async extractColors(imageBuffer: Buffer, maxColors: number = 8): Promise<string[]> {
     // Resize to small thumbnail for faster color sampling
-    const { data, info } = await sharp(imageBuffer)
-      .resize(64, 64, { fit: "cover" })
+    const { data } = await sharp(imageBuffer)
+      .resize(COLOR_SAMPLE_SIZE, COLOR_SAMPLE_SIZE, { fit: "cover" })
       .removeAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });
 
-    // Count pixel colors, quantized to reduce noise (round to nearest 8)
+    // Count pixel colors, quantized to reduce noise (round to nearest step)
     const colorCounts = new Map<string, number>();
     for (let i = 0; i < data.length; i += 3) {
-      const r = Math.min(Math.round(data[i] / 8) * 8, 248);
-      const g = Math.min(Math.round(data[i + 1] / 8) * 8, 248);
-      const b = Math.min(Math.round(data[i + 2] / 8) * 8, 248);
+      const r = Math.min(
+        Math.round(data[i] / COLOR_QUANTIZE_STEP) * COLOR_QUANTIZE_STEP,
+        COLOR_QUANTIZE_MAX,
+      );
+      const g = Math.min(
+        Math.round(data[i + 1] / COLOR_QUANTIZE_STEP) * COLOR_QUANTIZE_STEP,
+        COLOR_QUANTIZE_MAX,
+      );
+      const b = Math.min(
+        Math.round(data[i + 2] / COLOR_QUANTIZE_STEP) * COLOR_QUANTIZE_STEP,
+        COLOR_QUANTIZE_MAX,
+      );
       const hex = `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
       colorCounts.set(hex, (colorCounts.get(hex) || 0) + 1);
     }

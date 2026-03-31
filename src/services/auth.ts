@@ -95,19 +95,16 @@ export class MobbinAuth {
   }
 
   private async doRefresh(): Promise<void> {
-    const res = await fetch(
-      `${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({
-          refresh_token: this.session.refresh_token,
-        }),
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
       },
-    );
+      body: JSON.stringify({
+        refresh_token: this.session.refresh_token,
+      }),
+    });
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
@@ -131,15 +128,13 @@ export class MobbinAuth {
    * The session is split across two cookies (`.0` and `.1`) and URL-encoded.
    */
   private static parseSessionFromCookie(cookie: string): SupabaseSession {
-    const cookies = cookie
-      .split("; ")
-      .reduce<Record<string, string>>((acc, part) => {
-        const eqIdx = part.indexOf("=");
-        if (eqIdx > 0) {
-          acc[part.substring(0, eqIdx)] = part.substring(eqIdx + 1);
-        }
-        return acc;
-      }, {});
+    const cookies = cookie.split("; ").reduce<Record<string, string>>((acc, part) => {
+      const eqIdx = part.indexOf("=");
+      if (eqIdx > 0) {
+        acc[part.substring(0, eqIdx)] = part.substring(eqIdx + 1);
+      }
+      return acc;
+    }, {});
 
     const chunk0 = cookies[`${SUPABASE_COOKIE_PREFIX}.0`] ?? "";
     const chunk1 = cookies[`${SUPABASE_COOKIE_PREFIX}.1`] ?? "";

@@ -183,3 +183,18 @@ export interface ContentSearchResponse<T> {
 export interface ValueResponse<T> {
   value: T;
 }
+
+/** A filter category returned by `/api/filter-tags/fetch-dictionary-definitions`. */
+export interface DictionaryCategory {
+  slug: string;
+  displayName: string;
+  experience: string;
+  subCategories: Array<{
+    entries: Array<{
+      displayName: string;
+      definition: string;
+      hidden?: boolean;
+      contentCounts: Record<string, Record<string, number>>;
+    }>;
+  }>;
+}
