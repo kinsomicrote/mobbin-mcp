@@ -1,0 +1,12 @@
+[  225446ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://mobbin.com/api/popular-apps/fetch-popular-apps-with-preview-screens:0
+[  227562ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://mobbin.com/api/search-bar/fetch-trending-apps:0
+[  232676ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://mobbin.com/api/search-bar/fetch-trending-filter-tags:0
+[  303777ms] [ERROR] `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog @ https://mobbin.com/_next/static/chunks/4472-dc9f09c4d789d06a.js?dpl=dpl_Gkpg7rm26dqx5Pitye1tV4W4eBSp:17
+[  303777ms] [WARNING] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. @ https://mobbin.com/_next/static/chunks/4472-dc9f09c4d789d06a.js?dpl=dpl_Gkpg7rm26dqx5Pitye1tV4W4eBSp:17
+[  304147ms] [WARNING] Tooltip is changing from uncontrolled to controlled. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component. @ https://mobbin.com/_next/static/chunks/4472-dc9f09c4d789d06a.js?dpl=dpl_Gkpg7rm26dqx5Pitye1tV4W4eBSp:17
+[  304147ms] [WARNING] Tooltip is changing from uncontrolled to controlled. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component. @ https://mobbin.com/_next/static/chunks/4472-dc9f09c4d789d06a.js?dpl=dpl_Gkpg7rm26dqx5Pitye1tV4W4eBSp:17
+[  304147ms] [WARNING] Tooltip is changing from uncontrolled to controlled. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component. @ https://mobbin.com/_next/static/chunks/4472-dc9f09c4d789d06a.js?dpl=dpl_Gkpg7rm26dqx5Pitye1tV4W4eBSp:17
