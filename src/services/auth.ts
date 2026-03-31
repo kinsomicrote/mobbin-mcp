@@ -3,9 +3,9 @@ import {
   SUPABASE_ANON_KEY,
   SUPABASE_COOKIE_PREFIX,
   TOKEN_REFRESH_BUFFER_SECONDS,
-} from "../constants";
+} from "../constants.js";
 
-interface SupabaseSession {
+export interface SupabaseSession {
   access_token: string;
   token_type: string;
   expires_in: number;
@@ -33,16 +33,39 @@ export class MobbinAuth {
   private session: SupabaseSession;
   private rawCookie: string;
   private refreshPromise: Promise<void> | null = null;
+  private onSessionRefreshed?: (session: SupabaseSession) => void;
 
-  constructor(rawCookie: string) {
+  private constructor(
+    session: SupabaseSession,
+    rawCookie: string,
+    onSessionRefreshed?: (session: SupabaseSession) => void
+  ) {
+    this.session = session;
     this.rawCookie = rawCookie;
-    this.session = this.parseSessionFromCookie(rawCookie);
+    this.onSessionRefreshed = onSessionRefreshed;
+  }
+
+  static fromCookie(rawCookie: string): MobbinAuth {
+    const session = MobbinAuth.parseSessionFromCookie(rawCookie);
+    return new MobbinAuth(session, rawCookie);
+  }
+
+  static fromSession(
+    session: SupabaseSession,
+    onSessionRefreshed?: (session: SupabaseSession) => void
+  ): MobbinAuth {
+    const rawCookie = MobbinAuth.buildCookieString(session);
+    return new MobbinAuth(session, rawCookie, onSessionRefreshed);
   }
 
   /**
    * Returns a valid cookie string for use in request headers.
    * Automatically refreshes the token if it's expired or about to expire.
    */
+  getSession(): SupabaseSession {
+    return this.session;
+  }
+
   async getCookieValue(): Promise<string> {
     if (this.isExpiringSoon()) {
       await this.refresh();
@@ -90,20 +113,24 @@ export class MobbinAuth {
       const text = await res.text().catch(() => "");
       throw new Error(
         `Token refresh failed (${res.status}): ${text.substring(0, 200)}. ` +
-          "You may need to re-login to mobbin.com and update MOBBIN_AUTH_COOKIE."
+          "Run 'npx mobbin-mcp auth' to re-authenticate."
       );
     }
 
     const newSession = (await res.json()) as SupabaseSession;
     this.session = newSession;
-    this.rawCookie = this.buildCookieString(newSession);
+    this.rawCookie = MobbinAuth.buildCookieString(newSession);
+
+    if (this.onSessionRefreshed) {
+      this.onSessionRefreshed(newSession);
+    }
   }
 
   /**
    * Parse the Supabase session JSON from the raw cookie string.
    * The session is split across two cookies (`.0` and `.1`) and URL-encoded.
    */
-  private parseSessionFromCookie(cookie: string): SupabaseSession {
+  private static parseSessionFromCookie(cookie: string): SupabaseSession {
     const cookies = cookie.split("; ").reduce<Record<string, string>>((acc, part) => {
       const eqIdx = part.indexOf("=");
       if (eqIdx > 0) {
@@ -130,7 +157,7 @@ export class MobbinAuth {
    * Rebuild the raw cookie string from a session object.
    * Splits the JSON across two cookies to match Supabase's chunking behavior.
    */
-  private buildCookieString(session: SupabaseSession): string {
+  private static buildCookieString(session: SupabaseSession): string {
     const encoded = encodeURIComponent(JSON.stringify(session));
     const midpoint = Math.ceil(encoded.length / 2);
     const chunk0 = encoded.substring(0, midpoint);

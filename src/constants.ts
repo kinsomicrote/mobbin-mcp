@@ -4,9 +4,8 @@ export const DEFAULT_PAGE_SIZE = 24;
 export const MAX_PAGE_SIZE = 50;
 export const CHARACTER_LIMIT = 25000;
 
-/** Public anon key embedded in Mobbin's client JS. Required for Supabase auth API calls. */
-export const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYyNTQ2MDM3NSwiZXhwIjoxOTQxMDM2Mzc1fQ.IgHG-M4znmVhQEa6uWWb3gz-_XXjsSvPPF8NBad8gvk";
+/** Public publishable key embedded in Mobbin's client JS. Required for Supabase auth API calls. */
+export const SUPABASE_ANON_KEY = "sb_publishable_LbI2-4spKrYx1xHKrI4YyQ_rC-csyUz";
 
 /** Cookie name prefix used by Supabase for this project. */
 export const SUPABASE_COOKIE_PREFIX = "sb-ujasntkfphywizsdaapi-auth-token";

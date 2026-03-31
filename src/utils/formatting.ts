@@ -1,5 +1,5 @@
-import { CHARACTER_LIMIT } from "../constants";
-import type { AppResult, ScreenResult, FlowResult, Collection } from "../types";
+import { CHARACTER_LIMIT } from "../constants.js";
+import type { AppResult, ScreenResult, FlowResult, Collection } from "../types.js";
 
 export function formatApps(apps: AppResult[]): string {
   if (apps.length === 0) return "No apps found.";

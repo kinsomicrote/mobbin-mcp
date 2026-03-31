@@ -1,4 +1,4 @@
-import { MOBBIN_BASE_URL } from "../constants";
+import { MOBBIN_BASE_URL } from "../constants.js";
 import type {
   AppResult,
   ScreenResult,
@@ -7,8 +7,8 @@ import type {
   SearchableApp,
   ContentSearchResponse,
   ValueResponse,
-} from "../types";
-import type { MobbinAuth } from "./auth";
+} from "../types.js";
+import type { MobbinAuth } from "./auth.js";
 
 /**
  * HTTP client for Mobbin's internal Next.js API routes.
