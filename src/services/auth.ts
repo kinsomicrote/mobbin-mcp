@@ -1,7 +1,7 @@
 import {
-  SUPABASE_URL,
   SUPABASE_ANON_KEY,
   SUPABASE_COOKIE_PREFIX,
+  SUPABASE_URL,
   TOKEN_REFRESH_BUFFER_SECONDS,
 } from "../constants.js";
 
@@ -136,7 +136,8 @@ export class MobbinAuth {
       return acc;
     }, {});
 
-    const chunk0 = cookies[`${SUPABASE_COOKIE_PREFIX}.0`] ?? "";
+    const chunk0 =
+      cookies[`${SUPABASE_COOKIE_PREFIX}.0`] ?? cookies[`${SUPABASE_COOKIE_PREFIX}`] ?? "";
     const chunk1 = cookies[`${SUPABASE_COOKIE_PREFIX}.1`] ?? "";
     const combined = decodeURIComponent(chunk0 + chunk1);
 
